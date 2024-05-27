@@ -1,6 +1,7 @@
 ﻿using BetterConsoleTables;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ConsoleApp.MiniIssueTrackingSystem;
 
@@ -13,9 +14,6 @@ public class Program
         // Example data
         issues.Add(new Issue(1, "Website Error", "Login page not working", "John Doe"));
         issues.Add(new Issue(2, "Database Slow Performance", "Database queries taking too long", "Jane Smith"));
-        //issues[0].AssignTo("Collin");
-        issues[1].AssignTo("John Doe");
-        issues[1].FixIssue();
 
         while (true)
         {
@@ -23,7 +21,8 @@ public class Program
             Console.WriteLine("1. List Issues");
             Console.WriteLine("2. Create Issue");
             Console.WriteLine("3. Update Issue");
-            Console.WriteLine("4. Exit");
+            Console.WriteLine("4. Fix Issue");
+            Console.WriteLine("5. Exit");
 
             string choice = Console.ReadLine();
 
@@ -39,6 +38,9 @@ public class Program
                     UpdateIssue();
                     break;
                 case "4":
+                    FixIssue();
+                    break;
+                case "5":
                     Console.WriteLine("Exiting Issue Tracker.");
                     return;
                 default:
@@ -61,22 +63,16 @@ public class Program
         {
             string fixedDate = issue.FixedDate.HasValue ? issue.FixedDate.Value.ToString("yyyy-MM-dd") : "Not Fixed";
             table.AddRow(
-                issue.Id, 
-                issue.Title, 
-                issue.AssignedTo ?? "No Assignee", 
-                issue.CreatedBy, 
+                issue.Id,
+                issue.Title,
+                issue.AssignedTo ?? "No Assignee",
+                issue.CreatedBy,
                 issue.CreatedDate.ToString("yyyy-MM-dd"),
                 issue.Status,
                 fixedDate);
         }
 
         Console.Write(table.ToString());
-        //Console.WriteLine("Id\tTitle\tAssigned To\tCreated By\tCreated Date\tStatus\tFixed Date");
-        //foreach (Issue issue in issues)
-        //{
-        //    string fixedDate = issue.FixedDate.HasValue ? issue.FixedDate.Value.ToString("yyyy-MM-dd") : "Not Fixed";
-        //    Console.WriteLine($"{issue.Id}\t{issue.Title}\t{issue.AssignedTo}\t{issue.CreatedBy}\t{issue.CreatedDate:yyyy-MM-dd}\t{issue.Status}\t{fixedDate}");
-        //}
     }
 
     static void CreateIssue()
@@ -114,7 +110,7 @@ public class Program
             Console.WriteLine("Invalid ID. Please enter a valid integer.");
         }
 
-        Issue issueToUpdate = issues.Find(i => i.Id == updateId)!;
+        Issue issueToUpdate = issues.Find(i => i.Id == updateId);
         if (issueToUpdate == null)
         {
             Console.WriteLine($"Issue with ID {updateId} not found.");
@@ -123,9 +119,38 @@ public class Program
 
         Console.WriteLine("Current Assigned To: " + issueToUpdate.AssignedTo);
         Console.Write("Enter the new assigned user: ");
-        string newAssignedTo = Console.ReadLine()!;
+        string newAssignedTo = Console.ReadLine();
 
         issueToUpdate.AssignTo(newAssignedTo);
         Console.WriteLine($"Issue with ID {updateId} successfully updated. Assigned To: {newAssignedTo}");
+    }
+
+    static void FixIssue()
+    {
+        if (issues.Count == 0)
+        {
+            Console.WriteLine("No issues found to fix.");
+            return;
+        }
+
+        Console.WriteLine("List of Issues:");
+        ListIssues();
+
+        Console.Write("Enter the ID of the issue to fix: ");
+        int fixId;
+        while (!int.TryParse(Console.ReadLine(), out fixId))
+        {
+            Console.WriteLine("Invalid ID. Please enter a valid integer.");
+        }
+
+        Issue issueToFix = issues.Find(i => i.Id == fixId);
+        if (issueToFix == null)
+        {
+            Console.WriteLine($"Issue with ID {fixId} not found.");
+            return;
+        }
+
+        issueToFix.FixIssue();
+        Console.WriteLine($"Issue with ID {fixId} successfully fixed.");
     }
 }
